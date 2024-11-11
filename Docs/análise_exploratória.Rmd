@@ -1,0 +1,491 @@
+---
+title: "InsightCo"
+author: "Grupo 3"
+date: "`r Sys.Date()`"
+output: html_document
+---
+# Análise Exploratória e de Governança de Dados
+
+### Variáveis e Pontos Estratégicos
+#### Visão gerencial:
+
+Desempenho de Vendas por Vendedor (cod_vendedor, quantidade, resultado)
+Para avaliar o desempenho individual dos vendedores e sua aderência às metas.
+Descrição: Essas variáveis incluem o código do vendedor (cod_vendedor), a quantidade de produtos vendidos (quantidade), e o lucro unitario dos produtos vendidos [preco - custo] (resultado). Elas são fundamentais para monitorar e avaliar o desempenho individual dos vendedores.
+Relevância para Governança Estratégica: Monitorar o desempenho de vendas por vendedor permite à empresa identificar os colaboradores que estão superando ou ficando abaixo das expectativas, possibilitando intervenções estratégicas, como treinamento adicional, ajustes no modelo de remuneração ou até revisões nas metas de vendas. Isso está diretamente ligado à estratégia de melhorar o engajamento e a performance dos vendedores, objetivo central do projeto.
+
+####  1.1. Sobre as variáveis:
+
+cod_vendedor: Presente nas tabelas transactions (por exemplo, data2024, data2023, etc.) e transaction_fact_v3_2018 até transaction_fact_v3_2024.
+quantidade: Presente nas tabelas transactions (por exemplo, data2018, data2019, etc.) e transaction_fact_v3_2018 até transaction_fact_v3_2024.
+preco: Presente nas tabelas transactions (por exemplo, data2018, data2019, etc.) e transaction_fact_v3_2018 até transaction_fact_v3_2024.
+Custo : presente nas tabelas de sku_costs
+Lucro: Função decorrente da subtração entre preco - custo
+
+ ####  Margem de Lucro dos Produtos (custo, preco, cod_prod)
+- Para analisar a margem de lucro dos produtos e identificar oportunidades de melhoria na rentabilidade.
+- Descrição: Essas variáveis incluem o custo dos produtos (custo), o preço de venda (preco), e o código do produto (cod_prod). A margem de lucro pode ser calculada com base na diferença entre o preço de venda e o custo do produto.
+- Relevância para Governança Estratégica: Analisar a margem de lucro por produto é essencial para a tomada de decisões estratégicas relacionadas à precificação, promoções, e incentivos de vendas. Produtos com margens mais altas podem ser priorizados em estratégias de cross-sell ou em campanhas de vendas, alinhando as atividades de vendas com os objetivos financeiros da empresa.
+
+####  2.1 . Sobre as variáveis:
+custo: Presente na tabela sku_cost
+Preco:Presente na tabela sku_price
+Cod_prod: Presente na tabela  sku_cost, sku_price, e sku_dataset
+
+#### Cumprimento de Metas de Vendas (sales_target, quantidade, cod_loja, cod_vendedor)
+- Para medir o cumprimento das metas em diferentes níveis e ajustar estratégias de vendas e incentivos.
+- Descrição: Variáveis como a meta de vendas estabelecida para os vendedores (sales_target), a quantidade de vendas realizadas (quantidade), e a associação dessas vendas com lojas (cod_loja) e vendedores (cod_vendedor) são cruciais para medir o desempenho.
+- Relevância para Governança Estratégica: O acompanhamento do cumprimento das metas de vendas permite avaliar a eficácia das metas estabelecidas e entender se os vendedores e lojas estão operando dentro das expectativas estratégicas. Isso ajuda a empresa a ajustar suas estratégias de vendas e, ao mesmo tempo, a melhorar a comunicação interna sobre as metas e expectativas, o que é um dos problemas centrais que o projeto busca resolver.
+#### 3.1.  Sobre as variáveis:
+sales_target: Presente na tabela target_salesperson e target_store_final
+quantidade: Presente nas tabelas transactions (por exemplo, data2018, data2019, etc.) e transaction_fact_v3_2018 até transaction_fact_v3_2024.
+Cod_loja: Presente na tabela target_store_final
+cod_vendedor: Presente nas tabelas transactions (por exemplo, data2018, data2019, etc.) e transaction_fact_v3_2018 até transaction_fact_v3_2024.
+
+#### Visão do vendedor:
+#### 1.1 - Produtos Frequentes em Cross-Sell (cod_prod, quantidade, nome_abrev, categoria)
+- Para ajudar os vendedores a venderem mais e alcançarem suas metas.
+= Descrição: Esta combinação de colunas permite identificar produtos frequentemente comprados juntos (cod_prod), a quantidade vendida (quantidade), o nome abreviado dos produtos (nome_abrev), e suas categorias (categoria).
+- Relevância para o Vendedor: Com essa informação, o vendedor pode sugerir de forma mais eficaz produtos complementares durante o processo de venda, aumentando o ticket médio. Por exemplo, se um determinado produto é frequentemente vendido junto com outro, o vendedor pode oferecer esses itens como um pacote ou sugestão adicional.
+
+Sobre as variáveis:
+
+cod_prod: Presente nas tabelas transactions (por exemplo, data2018, data2019, etc.), transaction_fact_v3_2018 até transaction_fact_v3_2024, e sku_dataset.
+quantidade: Presente nas tabelas transactions (por exemplo, data2018, data2019, etc.) e transaction_fact_v3_2018 até transaction_fact_v3_2024.
+nome_abrev: Presente na tabela sku_dataset.
+categoria: Presente na tabela sku_dataset.
+
+### Data Visualization
+
+##### Lendo os DF
+```{r}
+sku_cost = './bd/sku_cost.csv'
+sku_price = './bd/sku_price.csv'
+sku_dataset = './bd/sku_dataset.csv'
+sku_status_dataset = './bd/sku_status_dataset.csv'
+employee = './bd/employee_final.csv'
+store_final = './bd/store_final.csv'
+target_salesperson = './bd/targets_salesperson_final.csv'
+target_store = './bd/target_store_final.csv'
+```
+
+```{r}
+x2024 = './bd/2024.csv'
+x2023 = './bd/2023.csv'
+x2022 = './bd/2022.csv'
+x2021 = './bd/2021.csv'
+x2020 = './bd/2020.csv'
+x2019 = './bd/2019.csv'
+x2018 = './bd/2018.csv'
+```
+
+```{r}
+sku_cost_df <- read.csv(sku_cost)
+sku_price_df <- read.csv(sku_price)
+sku_dataset_df <- read.csv(sku_dataset, sep =";")
+sku_status_dataset_df <- read.csv(sku_status_dataset)
+x2024 <- read.csv(x2024)
+x2023 <- read.csv(x2023)
+# x2022 <- read.csv(x2022)
+# x2021 <- read.csv(x2021)
+# x2020 <- read.csv(x2020)
+# x2019 <- read.csv(x2019)
+# x2018 <- read.csv(x2018)
+employee <- read.csv(employee)
+store_final <- read.csv(store_final)
+target_salesperson <- read.csv(target_salesperson)
+target_store <- read.csv(target_store)
+```
+
+```{r}
+dataframes <- list(sku_cost_df=sku_cost_df, sku_price_df=sku_price_df, 
+                   sku_dataset_df=sku_dataset_df, sku_status_dataset_df=sku_status_dataset_df, 
+                   x2024=x2024, x2023=x2023, employee=employee, 
+                   store_final=store_final, target_salesperson=target_salesperson)
+print_column_names <- function(df_list) {
+  for (df_name in names(df_list)) {
+    cat("Nomes das colunas em", df_name, ":\n")
+    print(names(df_list[[df_name]]))
+    cat("\n")
+  }
+}
+print_column_names(dataframes)
+
+```
+
+#### Desempenho de Vendas por Vendedor
+```{r}
+transactions <- rbind(x2024, x2023)
+summary(transactions)
+```
+
+##### Tratamento dos dados
+
+```{r}
+library(dplyr)
+sku_price_df <- sku_price_df %>%
+  group_by(cod_prod) %>%
+  summarise(preco = sum(preco))
+
+sku_cost_df <- sku_cost_df %>%
+  group_by(cod_prod) %>%
+  mutate(custo = sum(custo)) %>%
+  ungroup() %>% 
+  distinct(cod_prod, .keep_all = TRUE) 
+sku_income <- merge(sku_price_df, sku_cost_df, by = "cod_prod")
+
+sku_income <- mutate(sku_income, lucro = preco - custo)
+
+print(sku_income)
+
+
+```
+```{r}
+library(dplyr)
+sku_income_lucro <- select(sku_income, cod_prod, lucro)
+sku_dataset_df_merged <- merge(sku_dataset_df, sku_income_lucro, by ="cod_prod", all.x =TRUE)
+summary(sku_dataset_df_merged)
+```
+
+```{r}
+library(dplyr)
+sku_dataset_df_selected <- select(sku_dataset_df_merged, cod_prod, categoria, sub_categoria, marca, lucro)
+comp_transactions <- merge(transactions, sku_dataset_df_selected, by ="cod_prod", all.x =TRUE)
+summary(comp_transactions)
+```
+#### Preparando os dados para a analise:
+```{r}
+employee_vendedor_selected <- select(employee_vendedor, cod_vendedor, name, cpf, status)
+comp_transactions1 <- merge(comp_transactions, employee_vendedor_selected, by ="cod_vendedor", all.x =TRUE)
+summary(comp_transactions1)
+```
+
+
+```{r}
+head(comp_transactions1)
+```
+
+```{r}
+comp_transactions1$resultado <- comp_transactions1$quantidade * comp_transactions1$lucro
+head(comp_transactions1)
+```
+
+```{r}
+df <- select(comp_transactions1, cod_vendedor, categoria, marca, quantidade, lucro, resultado)
+head(df)
+```
+
+```{r}
+seller <- df %>%
+  group_by(cod_vendedor)%>%
+  summarise(resultado =sum(resultado))
+print(seller)
+```
+#### Graficos
+```{r}
+str(x2024)
+summary(x2024)
+```
+
+```{r}sumarizar
+marcas_mais_vendidas <- df %>% 
+  group_by(marca) %>%
+  summarise(quantidade_vendida = sum(quantidade)) %>%
+  arrange(desc(quantidade_vendida))
+```
+```{r}
+library(ggplot2)
+library(scales)
+ggplot(marcas_mais_vendidas, aes(x=reorder(marca,-quantidade_vendida), y=quantidade_vendida, fill=marca))+
+  geom_bar(stat="identity", color="skyblue", fill="#197a56")+
+  scale_y_continuous(labels = comma)+
+  labs(title="Marcas Mais Vendidas", x="Marca", y="Quantidade Vendida")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle=45, hjust=1),
+        plot.title = element_text(hjust=0.5),
+        legend.position="none")
+```
+Este gráfico de barras verticais exibe as marcas de cosméticos mais vendidas em uma determinada base de dados, destacando marcas como Dior, MAC Cosmetics, e Clinique, que estão no topo da lista. Dior lidera as vendas com uma quantidade vendida próxima a 10 milhões de unidades, seguida de perto por MAC Cosmetics. Essa dominancia pode acontecer por conta que amba as marcas tem uma cartela de produtos maiores que as outras.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(scales)
+categorias_mais_vendidas <- df %>%
+  group_by(categoria)%>%
+  summarise(quantidade_vendida =sum(quantidade))%>%
+  arrange(desc(quantidade_vendida))
+grafico <- ggplot(categorias_mais_vendidas, aes(x=reorder(categoria,-quantidade_vendida), y=quantidade_vendida, fill=categoria))+
+  geom_bar(stat="identity", color="skyblue", fill="#197a56")+
+  scale_y_continuous(labels = comma)+
+  labs(title="Categorias Mais Vendidas", x="Categoria", y="Quantidade Vendida")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle=45, hjust=1),
+        plot.title = element_text(hjust=0.5),
+        legend.position="none")
+print(grafico)
+```
+Este gráfico de barras verticais representa as categorias de produtos mais vendidas, incluindo categorias como Olhos, Corpo, Lábios, Rosto, Cuidados com a Pele, e Cabelo. A categoria "Olhos" lidera as vendas, seguida de perto pelas categorias "Corpo" e "Lábios". A categoria "Cabelo" apresenta a menor quantidade de vendas, significativamente abaixo das demais categorias.
+```{r}
+
+library(dplyr)
+library(ggplot2)
+vendedor_maior_resultado <- df %>%
+  group_by(cod_vendedor)%>%
+  summarise(resultado =sum(resultado))%>%
+  arrange(desc(resultado))
+top5_vendedores <- head(vendedor_maior_resultado,5)
+ggplot(top5_vendedores, aes(x=reorder(cod_vendedor,-resultado), y=resultado, fill=cod_vendedor))+
+  geom_bar(stat="identity", color="black", fill="#197a56")+
+  scale_y_continuous(labels = comma)+
+  labs(title="Top 5 Vendedores com o Maior Resultado", x="Código do Vendedor", y="Resultado")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle=45, hjust=1),
+        plot.title = element_text(hjust=0.5))
+#ggsave("top5_vendedores.png", width =10, height =6, dpi =300)# Salva o gráfico como uma imagem PNG
+```
+Este gráfico de barras verticais destaca os cinco vendedores com o maior resultado em vendas, identificados por seus códigos (839, 609, 584, 984, e 774). Todos os vendedores listados alcançaram resultados próximos de 30 milhões de unidades vendidas, com pouca variação entre eles.
+
+### Margem de Lucro dos Produtos
+
+```{r}
+names(sku_cost_df
+    )
+
+```
+
+
+```{r}
+product_profit_margin <- merge(sku_cost_df, sku_price_df, by ="cod_prod")
+product_profit_margin$lucro <- product_profit_margin$preco - product_profit_margin$custo
+product_profit_margin <- merge(product_profit_margin, sku_dataset_df, by ="cod_prod")
+```
+
+```{r}
+head(product_profit_margin)
+```
+
+##### Verificando a estrutura do data frame 'product_profit_margin'
+
+```{r}
+unique_products <- product_profit_margin %>%
+  arrange(desc(lucro))%>%
+  distinct(nome_abrev, .keep_all =TRUE)
+top_products <- unique_products %>%
+  head(10)
+library(ggplot2)
+ggplot(top_products, aes(x=reorder(nome_abrev, lucro), y=lucro))+
+  geom_bar(stat="identity", fill="#197a56", width=0.5)+
+  coord_flip()+
+  labs(title="Top 10 Produtos por Margem de Lucro", x="", y="Margem de Lucro")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(angle=0, hjust=1, size=12),
+        axis.title.y = element_blank(),
+        plot.title = element_text(hjust=0.5, size=14))
+#ggsave("top10_products_profit.png", plot = last_plot(), width =12, height =8, dpi =300)
+```
+Este gráfico mostra os dez produtos com as maiores margens de lucro, destacando itens como "Hypnotic Poison Eau de Parfum" e "Miss Dior Eau de Parfum" como os mais lucrativos. Outros produtos de destaque incluem "Sauvage Deodorant Stick" e "Poison Girl Eau de Parfum", que também apresentam margens de lucro elevadas.
+```{r}
+library(dplyr)
+marca_lucro <- product_profit_margin %>%
+  group_by(marca)%>%
+  summarise(total_lucro =sum(lucro), .groups ='drop')%>%
+  arrange(desc(total_lucro))
+marca_lucro_media <- product_profit_margin %>%
+  group_by(marca)%>%
+  summarise(media_lucro = mean(lucro), .groups ='drop')%>%
+  arrange(desc(media_lucro))
+```
+
+```{r}
+top_marcas <- head(marca_lucro,10)
+top_marcas_media <- head(marca_lucro_media,10)
+```
+
+```{r}
+library(ggplot2)
+ggplot(top_marcas, aes(x=reorder(marca, total_lucro), y=total_lucro, fill=marca))+
+  geom_col(fill="#197a56")+
+  coord_flip()+
+  labs(title="Top 10 Marcas por Margem Total de Lucro", x="Marca", y="Margem Total de Lucro")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(size=12),
+        plot.title = element_text(hjust=0.5, size=14),
+        legend.position ="none")
+ggplot(top_marcas_media, aes(x=reorder(marca, media_lucro), y=media_lucro, fill=marca))+
+  geom_col(fill="#197a56")+
+  coord_flip()+
+  labs(title="Top 10 Marcas por Margem Média de Lucro", x="Marca", y="Margem Média de Lucro")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(size=12),
+        plot.title = element_text(hjust=0.5, size=14),
+        legend.position ="none")
+#ggsave("top_marcas_total_lucro_verde.png", plot = last_plot(), width =12, height =8, dpi =300)
+```
+Neste gráfico, as marcas são ordenadas pela margem média de lucro, com Dior destacando-se significativamente à frente das demais. NYX e MAC Cosmetics também aparecem com margens consideráveis, seguidas por L'Oréal Paris, Clinique, e Dove.
+
+##### Por categoria:
+
+```{r}
+library(dplyr)# Calculando a margem total de lucro por categoria
+categoria_lucro <- product_profit_margin %>%
+  group_by(categoria)%>%
+  summarise(total_lucro =sum(lucro), .groups ='drop')%>%
+  arrange(desc(total_lucro))# Calculando a margem média de lucro por categoria
+categoria_lucro_media <- product_profit_margin %>%
+  group_by(categoria)%>%
+  summarise(media_lucro = mean(lucro), .groups ='drop')%>%
+  arrange(desc(media_lucro))
+```
+
+```{r}
+top_categorias <- head(categoria_lucro,10)
+top_categorias_media <- head(categoria_lucro_media,10)
+```
+
+```{r}
+library(ggplot2)
+ggplot(top_categorias, aes(x=reorder(categoria, total_lucro), y=total_lucro, fill=categoria))+
+  geom_col(fill="#197a56")+
+  coord_flip()+
+  labs(title="Top Categorias por Margem Total de Lucro", x="Categoria", y="Margem Total de Lucro")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(size=12),
+        plot.title = element_text(hjust=0.5, size=14),
+        legend.position ="none")
+ggplot(top_categorias_media, aes(x=reorder(categoria, media_lucro), y=media_lucro, fill=categoria))+
+  geom_col(fill="#197a56")+
+  coord_flip()+
+  labs(title="Top Categorias por Margem Média de Lucro", x="Categoria", y="Margem Média de Lucro")+
+  theme_minimal()+
+  theme(axis.text.y = element_text(size=12),
+        plot.title = element_text(hjust=0.5, size=14),
+        legend.position ="none")
+#ggsave("top_categorias_media_lucro_verde.png", plot = last_plot(), width =12, height =8, dpi =300)
+```
+Este gráfico de barras verticais apresenta as categorias de produtos organizadas por margem média de lucro, com "Corpo" liderando por uma ampla margem. "Cabelo" e "Rosto" seguem na lista, com margens médias substancialmente menores.
+
+### Produtos Frequentes em Cross-Sell:
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(Matrix)
+library(arules)
+
+merged_data <- merge(x2024, sku_dataset_df[, c("cod_prod", "nome_abrev")], by = "cod_prod")
+
+
+transacoes <- merged_data %>%
+  group_by(cod_transacao) %>%
+  summarize(produtos = list(nome_abrev))  
+
+transacoes_list <- as(transacoes$produtos, "transactions")
+
+regras <- apriori(transacoes_list, parameter = list(supp = 0.001, conf = 0.2, minlen = 2))
+
+num_regras <- length(regras)
+print(paste("Número de regras geradas:", num_regras))
+
+if (num_regras > 0) {
+  regras_ordenadas <- sort(regras, by = "lift", decreasing = TRUE)
+  
+  inspect(regras_ordenadas[1:min(10, num_regras)])
+  
+  regras_df <- as(regras_ordenadas, "data.frame")
+  
+  regras_df <- regras_df %>%
+    separate(col = "rules", into = c("Produto_A", "Produto_B"), sep = " => ")
+  
+  ggplot(regras_df[1:min(10, num_regras), ], aes(x = reorder(paste(Produto_A, Produto_B, sep = " & "), -lift), y = lift)) +
+    geom_bar(stat = "identity", fill = "#197a56") +
+    coord_flip() +
+    labs(title = "Pares de Produtos Frequentes em Cross-Sell",
+         x = "Pares de Produtos",
+         y = "Lift") +
+    theme_minimal()
+} else {
+  print("Nenhuma regra foi gerada. Considere ajustar os parâmetros de suporte e confiança.")
+}
+
+```
+Este gráfico apresenta os pares de produtos que são frequentemente comprados juntos, medidos pelo "Lift," que indica a força da associação entre os produtos. Os pares são organizados em ordem decrescente de lift, o que facilita a identificação das combinações de produtos mais populares e potencialmente sinérgicas.
+
+Principais Pares de Produtos:
+
+- Aromatics Elixir Eau de & Homme Eau De Cologne e Homme Eau De Toilette: Este par lidera o gráfico, indicando uma forte tendência dos clientes em comprar esses perfumes juntos.
+
+- Matte Lipstick Please & Powder Kiss Liquid Lipstick e Retro Matte Liquid Lip: A combinação de batons da MAC Cosmetics aparece várias vezes, mostrando uma forte correlação na compra desses produtos.
+
+- Mini Mac Lipstick Mehr & Rouge Dior Forever Lipstick e Retro Matte Liquid Lip: Outra combinação popular que envolve produtos de marcas distintas, mostrando que os consumidores tendem a misturar produtos premium de diferentes marcas.
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(Matrix)
+library(arules)
+merged_data <- merge(x2024, sku_dataset_df[,c("cod_prod","categoria")], by ="cod_prod")
+transacoes <- merged_data %>%
+  group_by(cod_transacao)%>%
+  summarize(categorias =list(categoria), .groups ='drop')
+transacoes_list <- as(transacoes$categorias,"transactions")
+regras <- apriori(transacoes_list, parameter =list(supp =0.001, conf =0.2, minlen =2))
+num_regras <-length(regras)
+print(paste("Número de regras geradas:", num_regras))
+if(num_regras >0){
+  regras_ordenadas <- sort(regras, by ="lift", decreasing =TRUE)
+  inspect(regras_ordenadas[1:min(10, num_regras)])
+  regras_df <- as(regras_ordenadas,"data.frame")
+  regras_df <- regras_df %>%
+    separate(col ="rules", into =c("Categoria_A","Categoria_B"), sep =" => ")
+  ggplot(regras_df[1:min(10, num_regras),], aes(x = reorder(paste(Categoria_A, Categoria_B, sep =" & "),-lift), y = lift))+
+    geom_bar(stat ="identity", fill ="#197a56")+
+    coord_flip()+
+    labs(title ="Pares de Categorias Frequentes em Cross-Sell",
+         x ="Pares de Categorias",
+         y ="Lift")+
+    theme_minimal()}else{
+  print("Nenhuma regra foi gerada. Considere ajustar os parâmetros de suporte e confiança.")}
+```
+
+Principais Pares de Categorias:
+
+{Lábios, Rosto} & {Cabelo}: Esta combinação lidera o gráfico, sugerindo que consumidores que compram produtos das categorias "Lábios" e "Rosto" têm uma alta probabilidade de também adquirir produtos da categoria "Cabelo."
+{Cuidados com a pele, Lábios, Rosto} & {Cabelo}: Outra combinação popular, onde produtos de cuidado com a pele, lábios e rosto estão frequentemente associados a compras na categoria "Cabelo."
+{Corpo, Rosto} & {Cabelo}: Produtos das categorias "Corpo" e "Rosto" também mostram uma forte correlação com compras na categoria "Cabelo," destacando a popularidade dos produtos capilares como complemento a outras categorias de beleza.
+
+## Discovery dos Dados
+
+- A partir do ID do funcionário, é possível associá-lo à sua meta de vendas mensal. Com base nisso, podemos analisar quais lojas possuem as maiores metas de vendas ao somarmos as metas de todos os funcionários de cada filial. Além disso, ao considerar a data de criação das filiais em conjunto com o total de vendas no mês, podemos avaliar a relação entre a maturidade da filial e sua performance de vendas. Isso pode indicar que, além da maturidade, a região onde a filial opera também exerce uma influência significativa nas vendas. 
+
+- Podemos também comparar o total vendido com a meta total por filial, o que permite identificar o potencial de crescimento e verificar se há necessidade de mais funcionários, entre outras questões. Além disso, a análise da relação entre determinados produtos e a sazonalidade pode proporcionar insights mais precisos para otimizar estratégias de vendas.
+
+
+## Características e Justificativas de Estruturação dos Dados
+
+  No nosso processo de decisão de escolha e estruturação dos dados buscamos por combinar eficiência no processo de tratamento de dados, unindo, também, aqueles dados que tinham mais relação com os insights que tanto o vendedor quanto o gerente das lojas iriam estar mais interessados, por exemplo, dentre as bases de dados que nos foram passadas, buscamos utilizar tanto uma análise temporal, com variáveis como: 
+  
+  - cod_vendedor // int
+  - quantidade // int 
+  - preco // double
+  - data // date
+
+  Mas também, a margem de lucro dos produtos, o que permite uma melhor compreensão de qual vendedor está tendo o melhor retorno por venda, eliminando discrepâncias e permitindo entender quais lojas vendem produtos com maior valor agregado
+  
+  - custo // double
+  - preco // double
+  - cod_prod // int
+
+  Podemos encontrar essas variáveis nas tabelas "transactions", "sku_cost", "sku_price" e "sku_dataset"
+
+  Por fim, o que queremos entender no final desse projeto é como que iremos manter os vendedores da CompanyCo mais engajados, a princípio estamos trabalhando com a hipótese de que maiores vendas poderá levá-los a maior engajamento. No entanto, faz sentido considerar um aumento no valor agregado dos produtos, para que seja possível aumentar a comissão para os vendedores. Nossa análise e compreensão do problema ainda traz a visão do cross-selling para o vendedor, com variáveis como:
+
+  - cod_prod // int
+  - quantidade // int
+  - nome_abrev // string
+  - categoria // string
+  - subcategoria // string
+  - marca // string
+

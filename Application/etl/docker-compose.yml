@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  spark:
+    build: . 
+    container_name: spark_container
+    tty: true
+    volumes:
+      - ./src:/app/src  
+      - ./data:/app/data     
+    depends_on:
+      - clickhouse
+  
+  clickhouse:
+    image: yandex/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    restart: always
+
+  worker:
+    build: . 
+    container_name: worker_container
+    tty: true
+    volumes:
+      - ./src:/app/src  
+      - ./data:/app/data
+    command: ["python3", "/app/src/worker.py"]
+    depends_on:
+      - spark
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - clickhouse
+  #   volumes:
+  #     - ./grafana:/var/lib/grafana
+  #   restart: always
+
+volumes:
+  postgres_data:
+  clickhouse_data:
+    driver: local
